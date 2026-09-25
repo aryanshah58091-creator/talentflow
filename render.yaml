@@ -1,0 +1,41 @@
+services:
+  # Backend API service
+  - type: web
+    name: talentflow-backend
+    runtime: python
+    rootDir: backend
+    buildCommand: bash build.sh
+    startCommand: gunicorn config.wsgi:application
+    envVars:
+      - key: DJANGO_DEBUG
+        value: "False"
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: CORS_ALLOW_ALL_ORIGINS
+        value: "True"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: talentflow-db
+          property: connectionString
+
+  # Frontend static web service
+  - type: web
+    name: talentflow-frontend
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_URL
+        fromService:
+          type: web
+          name: talentflow-backend
+          envVarKey: RENDER_EXTERNAL_URL
+
+databases:
+  - name: talentflow-db
+    plan: free
