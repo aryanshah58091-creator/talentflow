@@ -2345,6 +2345,13 @@ textarea {
    NOTIFICATION DRAWER & PIPELINE CONTROLS
    ========================================================= */
 
+.notificationBackdrop {
+  position: fixed;
+  inset: 0;
+  background: transparent;
+  z-index: 998;
+}
+
 .notificationDrawer {
   position: absolute;
   top: calc(100% + 8px);
@@ -2359,6 +2366,41 @@ textarea {
   overflow: hidden;
   animation: tfFadeSlideDown 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
+
+@media (max-width: 768px) {
+  .notificationBackdrop {
+    background: rgba(15, 23, 42, 0.45);
+    backdrop-filter: blur(4px);
+    z-index: 999;
+  }
+
+  .notificationDrawer {
+    position: fixed;
+    top: 68px;
+    left: 12px;
+    right: 12px;
+    width: auto;
+    max-width: calc(100vw - 24px);
+    max-height: calc(100vh - 90px);
+    border-radius: 16px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+    z-index: 1000;
+  }
+
+  .notificationDrawerHeader {
+    padding: 12px 14px;
+  }
+
+  .notificationDrawerList {
+    max-height: calc(100vh - 160px);
+  }
+
+  .notificationItem {
+    padding: 12px 14px;
+    gap: 10px;
+  }
+}
+
 
 @keyframes tfFadeSlideDown {
   from { opacity: 0; transform: translateY(-8px); }

@@ -6,16 +6,18 @@ export default function NotificationDrawer({ notifications, apps, onClose, onMar
   const unreadCount = notifications.filter(n => !n.is_read).length;
 
   return (
-    <div className="notificationDrawer">
-      <div className="notificationDrawerHeader">
-        <div style={{display:'flex',alignItems:'center',gap:'8px'}}>
-          <b style={{fontSize:'14px',color:'#0f172a'}}>Notifications</b>
-          {unreadCount > 0 && (
-            <span className="pill" style={{background:'#fee2e2',color:'#ef4444',borderColor:'#fca5a5',fontSize:'11px',padding:'2px 7px'}}>
-              {unreadCount} new
-            </span>
-          )}
-        </div>
+    <>
+      <div className="notificationBackdrop" onClick={onClose} />
+      <div className="notificationDrawer">
+        <div className="notificationDrawerHeader">
+          <div style={{display:'flex',alignItems:'center',gap:'8px'}}>
+            <b style={{fontSize:'14px',color:'#0f172a'}}>Notifications</b>
+            {unreadCount > 0 && (
+              <span className="pill" style={{background:'#fee2e2',color:'#ef4444',borderColor:'#fca5a5',fontSize:'11px',padding:'2px 7px'}}>
+                {unreadCount} new
+              </span>
+            )}
+          </div>
         <div style={{display:'flex',gap:'8px',alignItems:'center'}}>
           {unreadCount > 0 && (
             <button
@@ -70,11 +72,11 @@ export default function NotificationDrawer({ notifications, apps, onClose, onMar
                     </span>
                   </div>
 
-                  <p style={{margin:'4px 0 6px',fontSize:'12.5px',lineHeight:'1.4',color:'#475569'}}>
+                  <p style={{margin:'4px 0 6px',fontSize:'12.5px',lineHeight:'1.4',color:'#475569',wordBreak:'break-word'}}>
                     {n.message}
                   </p>
 
-                  <div style={{display:'flex',gap:'8px',alignItems:'center',marginTop:'6px'}}>
+                  <div style={{display:'flex',gap:'8px',alignItems:'center',marginTop:'6px',flexWrap:'wrap'}}>
                     {isAptitude && matchedApp && (!matchedApp.assessment_info || matchedApp.assessment_info.status !== 'completed') && (
                       <button
                         type="button"
@@ -117,6 +119,7 @@ export default function NotificationDrawer({ notifications, apps, onClose, onMar
         )}
       </div>
     </div>
+    </>
   );
 }
 
