@@ -139,12 +139,89 @@ The broader blueprint includes an administrative role for platform oversight, mo
 
 ---
 
+# 7. How to Run
 
+## ⚡ 1-Click Quick Launch (Windows)
+
+To start both the Backend and Frontend with a single click:
+
+```bash
+run.bat
+```
+
+> **What `run.bat` does automatically:**
+> 1. Verifies virtual environments and installs missing dependencies
+> 2. Starts the Django REST API at `http://127.0.0.1:8000/`
+> 3. Starts the Vite React frontend at `http://localhost:5173/`
+> 4. Automatically opens your default web browser to the application
+
+*(If running for the first time, simply double-click `setup.bat` first).*
+
+---
+
+## 🛠️ Manual Step-by-Step Run
+
+### 1. Backend
+
+```bash
+cd backend
+
+python -m venv venv
+```
+
+#### Windows:
+
+```bash
+venv\Scripts\activate
+```
+
+Install dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+Configure environment variables:
+
+```bash
+copy .env.example .env
+```
+
+Apply migrations:
+
+```bash
+python manage.py migrate
+```
+
+Run the API:
+
+```bash
+python manage.py runserver
+```
+
+Run Automated Test Suite (11 Tests):
+
+```bash
+python manage.py test tests
+```
 
 ### Interactive API Documentation:
 - **Swagger UI**: [http://127.0.0.1:8000/api/docs/](http://127.0.0.1:8000/api/docs/)
 - **Redoc**: [http://127.0.0.1:8000/api/redoc/](http://127.0.0.1:8000/api/redoc/)
 - **API Health Check**: [http://127.0.0.1:8000/api/v1/health/](http://127.0.0.1:8000/api/v1/health/)
+
+### 2. Frontend
+
+Open a second terminal:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Open the Vite URL shown in the terminal ([http://localhost:5173/](http://localhost:5173/)).
+
 
 
 ---
