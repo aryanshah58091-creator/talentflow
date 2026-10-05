@@ -193,7 +193,7 @@ Update Status
 
 ---
 
-# 10. Project Deep Dive
+# 8. Project Deep Dive
 
 [Open the Project Deep Dive](docs/project-deep-dive.pdf)
 
@@ -217,7 +217,7 @@ The deep dive explains:
 
 ---
 
-# 8. Lessons Learned
+# 9. Lessons Learned
 
 - Backend validation should remain the source of truth.
 - Authentication and authorization are different concerns.
@@ -230,7 +230,7 @@ The deep dive explains:
 
 ---
 
-# 9. Project Links
+# 10. Project Links
 
 - **GitHub:** Add the final repository URL here after the first push.
 - **Live Demo:** Add the deployed application URL here after deployment.
