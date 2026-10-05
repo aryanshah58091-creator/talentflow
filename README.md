@@ -77,15 +77,9 @@ The blueprint defines the product vision, users, recruitment workflow, technolog
 
 ---
 
-# 4. ERD Diagram
-
-![TalentFlow ERD and Database Architecture](docs/images/erd-diagram.png)
-
-The ERD shows the core relationships between users, profiles, companies, jobs, applications, skills, interviews, offers, notifications and supporting recruitment entities.
-
 ---
 
-# 5. System Map
+# 4. System Map
 
 [Open the TalentFlow System Map / Feature Map](docs/system-map.pdf)
 
@@ -93,7 +87,7 @@ The system map documents the broader feature landscape and progressive developme
 
 ---
 
-# 6. System Architecture
+# 5. System Architecture
 
 ```text
                     ┌──────────────────────┐
@@ -120,7 +114,7 @@ The current MVP follows a clear React → DRF → ORM → PostgreSQL request pat
 
 ---
 
-# 7. User Roles
+# 6. User Roles
 
 ### Candidate
 
@@ -145,73 +139,17 @@ The broader blueprint includes an administrative role for platform oversight, mo
 
 ---
 
-# 8. How to Run
 
-## Backend
-
-```bash
-cd backend
-
-python -m venv venv
-```
-
-### Windows
-
-```bash
-venv\Scripts\activate
-```
-
-Install dependencies:
-
-```bash
-pip install -r requirements.txt
-```
-
-Configure environment variables:
-
-```bash
-copy .env.example .env
-```
-
-Apply migrations:
-
-```bash
-python manage.py migrate
-```
-
-Run the API:
-
-```bash
-python manage.py runserver
-```
-
-Run Automated Test Suite (11 Tests):
-
-```bash
-python manage.py test tests
-```
 
 ### Interactive API Documentation:
 - **Swagger UI**: [http://127.0.0.1:8000/api/docs/](http://127.0.0.1:8000/api/docs/)
 - **Redoc**: [http://127.0.0.1:8000/api/redoc/](http://127.0.0.1:8000/api/redoc/)
 - **API Health Check**: [http://127.0.0.1:8000/api/v1/health/](http://127.0.0.1:8000/api/v1/health/)
 
-## Frontend
-
-Open a second terminal:
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-Open the Vite URL shown in the terminal ([http://localhost:5173/](http://localhost:5173/)).
-
 
 ---
 
-# 9. User Manual
+# 7. User Manual
 
 The complete user guide is available here:
 
@@ -275,20 +213,11 @@ The deep dive explains:
 
 ---
 
-# 11. Challenges & Solutions
 
-| Challenge | Solution |
-|---|---|
-| Stale authentication token after token rotation | Cleared local demo token and re-authenticated |
-| Candidate demo password mismatch | Reset the demo password through Django shell |
-| Pipeline was initially display-only | Added a status selector and PATCH-based update flow |
-| Job skills needed many-to-many input | Added write-only `skill_ids` and verified JobSkill associations |
-| Related data could cause unnecessary queries | Used `select_related` and `prefetch_related` |
-| Need to distinguish MVP from roadmap | Documented progressive release strategy instead of overstating completed features |
 
 ---
 
-# 12. Lessons Learned
+# 8. Lessons Learned
 
 - Backend validation should remain the source of truth.
 - Authentication and authorization are different concerns.
@@ -301,38 +230,7 @@ The deep dive explains:
 
 ---
 
-# 13. Future Improvements
-
-### Product
-
-- Interview scheduling UI
-- Interview feedback
-- Offer management
-- Notifications center
-- Rich recruiter analytics
-- Candidate profile/resume management
-
-### Engineering
-
-- Automated Django and API tests
-- Stronger object-level permission checks
-- Pagination and filtering improvements
-- Structured logging and monitoring
-- CI/CD
-- Production deployment
-- Redis + Celery background processing
-
-### Intelligent Features
-
-- Resume parsing
-- Skill extraction
-- Candidate/job skill matching
-- Explainable match scores
-- Candidate ranking and decision-support insights
-
----
-
-# 14. Project Links
+# 9. Project Links
 
 - **GitHub:** Add the final repository URL here after the first push.
 - **Live Demo:** Add the deployed application URL here after deployment.
@@ -340,32 +238,7 @@ The deep dive explains:
 
 ---
 
-## Repository Structure
 
-```text
-TalentFlow/
-├── backend/
-├── frontend/
-├── docs/
-│   ├── blueprint.pdf
-│   ├── detailed-flowchart.pdf
-│   ├── erd-diagram.png
-│   ├── project-deep-dive.pdf
-│   ├── system-architecture.pdf
-│   ├── system-map.pdf
-│   ├── user-manual.pdf
-│   └── images/
-│       ├── detailed-flowchart.png
-│       ├── erd-diagram.png
-│       └── project-showcase.png
-├── .env.example
-├── .gitignore
-├── docker-compose.yml
-├── README.md
-├── run_backend.bat
-├── run_frontend.bat
-└── setup.bat
-```
 
 ## Portfolio Note
 
