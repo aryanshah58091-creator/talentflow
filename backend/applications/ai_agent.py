@@ -246,3 +246,284 @@ def _run_heuristic_agent(**ctx):
         "gaps": weaknesses,
         "interview_questions": questions
     }
+
+
+def generate_assessment_questions(job_title="Software Engineer", skills=None, description=""):
+    """
+    Generates a balanced 10-question Aptitude & Technical Screening Test:
+    - 3 Quantitative Aptitude questions
+    - 3 Logical Reasoning questions
+    - 2 Verbal Ability questions
+    - 2 Technical / Domain-Specific questions tailored to the job's title and skills.
+    """
+    skills = skills or []
+    skills_lower = [s.lower() for s in skills]
+    title_lower = job_title.lower()
+
+    # 1. Try Gemini if API key is present
+    gemini_key = os.getenv('GEMINI_API_KEY')
+    if gemini_key:
+        try:
+            return _generate_gemini_assessment_questions(gemini_key, job_title, skills, description)
+        except Exception as e:
+            print(f"[AIAgent] Gemini question generation error: {e}. Falling back to curated bank.")
+
+    # 2. Rich Curated Aptitude & Technical Question Bank
+    questions = []
+
+    # Category 1: Quantitative Aptitude (3 questions)
+    quant_bank = [
+        {
+            "category": "Quantitative Aptitude",
+            "question_text": "A project team of 6 engineers completes a backend service in 12 days. If 2 engineers are moved to another project, how many days will the remaining 4 engineers take to complete a project of equal scope?",
+            "options": [
+                {"id": "A", "text": "15 days"},
+                {"id": "B", "text": "18 days"},
+                {"id": "C", "text": "20 days"},
+                {"id": "D", "text": "24 days"}
+            ],
+            "correct_option": "B",
+            "explanation": "Total man-days required = 6 * 12 = 72 man-days. With 4 engineers remaining, days required = 72 / 4 = 18 days."
+        },
+        {
+            "category": "Quantitative Aptitude",
+            "question_text": "An API server handled 25,000 requests per minute on Monday. Following a marketing campaign, throughput surged to 40,000 requests per minute on Tuesday. What was the percentage increase in traffic?",
+            "options": [
+                {"id": "A", "text": "50%"},
+                {"id": "B", "text": "60%"},
+                {"id": "C", "text": "62.5%"},
+                {"id": "D", "text": "75%"}
+            ],
+            "correct_option": "B",
+            "explanation": "Increase = 40,000 - 25,000 = 15,000. Percentage increase = (15,000 / 25,000) * 100% = 60%."
+        },
+        {
+            "category": "Quantitative Aptitude",
+            "question_text": "Two data pipelines, A and B, synchronize records from a legacy database. Pipeline A syncs the database in 6 hours, while Pipeline B syncs it in 3 hours. How long will they take if they run concurrently?",
+            "options": [
+                {"id": "A", "text": "2 hours"},
+                {"id": "B", "text": "2.5 hours"},
+                {"id": "C", "text": "4.5 hours"},
+                {"id": "D", "text": "1.5 hours"}
+            ],
+            "correct_option": "A",
+            "explanation": "Combined rate = 1/6 + 1/3 = 3/6 = 1/2 database per hour. Total time = 1 / (1/2) = 2 hours."
+        }
+    ]
+    questions.extend(quant_bank)
+
+    # Category 2: Logical Reasoning (3 questions)
+    logical_bank = [
+        {
+            "category": "Logical Reasoning",
+            "question_text": "Consider the number series: 4, 9, 19, 39, 79, ___. Which number logically completes the sequence?",
+            "options": [
+                {"id": "A", "text": "149"},
+                {"id": "B", "text": "159"},
+                {"id": "C", "text": "169"},
+                {"id": "D", "text": "179"}
+            ],
+            "correct_option": "B",
+            "explanation": "Each subsequent term follows the pattern: 2 * n + 1. (4*2+1=9, 9*2+1=19, 19*2+1=39, 39*2+1=79, 79*2+1=159)."
+        },
+        {
+            "category": "Logical Reasoning",
+            "question_text": "Statements: (1) All microservices use containers. (2) Some containers are orchestration-managed. Conclusions: I. Some microservices are orchestration-managed. II. All containers are microservices. Which conclusion(s) follow logically?",
+            "options": [
+                {"id": "A", "text": "Only conclusion I follows"},
+                {"id": "B", "text": "Only conclusion II follows"},
+                {"id": "C", "text": "Neither I nor II follows conclusively"},
+                {"id": "D", "text": "Both I and II follow"}
+            ],
+            "correct_option": "C",
+            "explanation": "Since only 'some' containers are orchestration-managed, we cannot definitively conclude that those containers host microservices. Furthermore, containers can host monoliths, so II does not follow."
+        },
+        {
+            "category": "Logical Reasoning",
+            "question_text": "In an agile development team, Priya deployed code after Rahul but before Sneha. Vikram deployed code before Rahul. Who was the first person to deploy?",
+            "options": [
+                {"id": "A", "text": "Rahul"},
+                {"id": "B", "text": "Priya"},
+                {"id": "C", "text": "Vikram"},
+                {"id": "D", "text": "Sneha"}
+            ],
+            "correct_option": "C",
+            "explanation": "Sequence of deployment: Vikram -> Rahul -> Priya -> Sneha. Vikram was first."
+        }
+    ]
+    questions.extend(logical_bank)
+
+    # Category 3: Verbal Ability (2 questions)
+    verbal_bank = [
+        {
+            "category": "Verbal Ability",
+            "question_text": "Select the word that best completes the sentence: 'The team decided to __________ the legacy monolithic codebase to eliminate redundant dependencies and improve maintainability.'",
+            "options": [
+                {"id": "A", "text": "refactor"},
+                {"id": "B", "text": "replicate"},
+                {"id": "C", "text": "confiscate"},
+                {"id": "D", "text": "fabricate"}
+            ],
+            "correct_option": "A",
+            "explanation": "'Refactor' is the precise term for restructuring existing computer code without changing its external behavior."
+        },
+        {
+            "category": "Verbal Ability",
+            "question_text": "Identify the grammatically correct sentence regarding error handling in software:",
+            "options": [
+                {"id": "A", "text": "Neither the database server nor the web workers was able to recover automatically."},
+                {"id": "B", "text": "Neither the database server nor the web workers were able to recover automatically."},
+                {"id": "C", "text": "Neither the database server or the web workers was able to recover automatically."},
+                {"id": "D", "text": "Neither the database server or the web workers were able to recover automatically."}
+            ],
+            "correct_option": "B",
+            "explanation": "In 'neither... nor...', the verb agrees with the closer subject ('web workers', plural -> 'were')."
+        }
+    ]
+    questions.extend(verbal_bank)
+
+    # Category 4: Technical & Role Specific (2 questions)
+    tech_bank = []
+    if any(k in title_lower or k in skills_lower for k in ['python', 'django', 'backend']):
+        tech_bank = [
+            {
+                "category": "Technical",
+                "question_text": "In Python / Django, what is the key difference between `select_related()` and `prefetch_related()` when querying related database objects?",
+                "options": [
+                    {"id": "A", "text": "`select_related` performs an SQL JOIN in a single query for single-valued relationships; `prefetch_related` executes separate queries for multi-valued relationships."},
+                    {"id": "B", "text": "`select_related` is for ManyToMany relationships, while `prefetch_related` is only for ForeignKey relationships."},
+                    {"id": "C", "text": "`prefetch_related` caches in Redis, while `select_related` writes to SQLite."},
+                    {"id": "D", "text": "There is no performance difference; they are aliases of each other."}
+                ],
+                "correct_option": "A",
+                "explanation": "`select_related` creates an SQL JOIN and includes the fields of the related object in the SELECT statement. `prefetch_related` does a separate lookup for each relationship and does the 'joining' in Python."
+            },
+            {
+                "category": "Technical",
+                "question_text": "Which HTTP status code is most appropriate for a REST API when a request is well-formed but cannot be processed due to semantic business validation errors?",
+                "options": [
+                    {"id": "A", "text": "400 Bad Request"},
+                    {"id": "B", "text": "422 Unprocessable Entity"},
+                    {"id": "C", "text": "403 Forbidden"},
+                    {"id": "D", "text": "500 Internal Server Error"}
+                ],
+                "correct_option": "B",
+                "explanation": "HTTP 422 Unprocessable Entity indicates that the server understands the content type and syntax of the request entity, but was unable to process the contained instructions."
+            }
+        ]
+    elif any(k in title_lower or k in skills_lower for k in ['react', 'frontend', 'javascript']):
+        tech_bank = [
+            {
+                "category": "Technical",
+                "question_text": "In React 18+, when does the cleanup function of a `useEffect` hook execute?",
+                "options": [
+                    {"id": "A", "text": "Only when the browser window closes."},
+                    {"id": "B", "text": "Before the component unmounts and before re-running the effect on subsequent renders when dependencies change."},
+                    {"id": "C", "text": "Immediately before the JSX return statement renders."},
+                    {"id": "D", "text": "Only when an uncaught runtime error is thrown."}
+                ],
+                "correct_option": "B",
+                "explanation": "React runs the cleanup function when the component unmounts and before running the effect on next render if dependency values changed."
+            },
+            {
+                "category": "Technical",
+                "question_text": "In modern JavaScript, what is the output of `[1, 2, 3].reduce((acc, curr) => acc + curr, 10)`?",
+                "options": [
+                    {"id": "A", "text": "6"},
+                    {"id": "B", "text": "16"},
+                    {"id": "C", "text": "10"},
+                    {"id": "D", "text": "[10, 1, 2, 3]"}
+                ],
+                "correct_option": "B",
+                "explanation": "The accumulator begins at initial value 10, then adds 1, 2, and 3: 10 + 1 + 2 + 3 = 16."
+            }
+        ]
+    else:
+        tech_bank = [
+            {
+                "category": "Technical",
+                "question_text": f"Which algorithmic time complexity provides the fastest lookup time on average for key-value retrieval in a hash-based data structure?",
+                "options": [
+                    {"id": "A", "text": "O(1)"},
+                    {"id": "B", "text": "O(log n)"},
+                    {"id": "C", "text": "O(n)"},
+                    {"id": "D", "text": "O(n log n)"}
+                ],
+                "correct_option": "A",
+                "explanation": "Hash tables provide average-case O(1) constant time complexity for insertions and lookups."
+            },
+            {
+                "category": "Technical",
+                "question_text": "What is the primary benefit of using database indexing on frequently queried columns in high-traffic applications?",
+                "options": [
+                    {"id": "A", "text": "Reduces disk storage by compressing table data"},
+                    {"id": "B", "text": "Significantly speeds up data retrieval queries (SELECT) at the cost of slight overhead on write operations (INSERT/UPDATE)"},
+                    {"id": "C", "text": "Prevents SQL injection vulnerabilities automatically"},
+                    {"id": "D", "text": "Encrypts sensitive customer data at rest"}
+                ],
+                "correct_option": "B",
+                "explanation": "Indexes create lookup trees (like B-trees) that minimize disk I/O for search queries, but require updating during write operations."
+            }
+        ]
+    questions.extend(tech_bank)
+
+    # Assign order indices
+    for i, q in enumerate(questions):
+        q["order"] = i + 1
+
+    return questions
+
+
+def _generate_gemini_assessment_questions(gemini_key, job_title, skills, description):
+    """Uses Gemini API to generate customized questions."""
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={gemini_key}"
+    prompt = f"""
+Create a 10-question multiple choice online assessment for candidates applying to '{job_title}'.
+Requirements/Skills: {', '.join(skills) if skills else 'General Software Engineering'}
+Job Overview: {description[:300]}
+
+Include:
+- 3 Quantitative Aptitude questions
+- 3 Logical Reasoning questions
+- 2 Verbal Ability questions
+- 2 Technical questions specifically tailored to {job_title} and {skills}
+
+Format MUST be valid JSON with this exact array structure:
+[
+  {{
+    "category": "<Quantitative Aptitude | Logical Reasoning | Verbal Ability | Technical>",
+    "question_text": "<Clear question prompt>",
+    "options": [
+      {{"id": "A", "text": "<Option A>"}},
+      {{"id": "B", "text": "<Option B>"}},
+      {{"id": "C", "text": "<Option C>"}},
+      {{"id": "D", "text": "<Option D>"}}
+    ],
+    "correct_option": "<A, B, C, or D>",
+    "explanation": "<Short explanation why this option is correct>"
+  }}
+]
+"""
+    payload = {
+        "contents": [{"parts": [{"text": prompt}]}],
+        "generationConfig": {
+            "responseMimeType": "application/json",
+            "temperature": 0.4
+        }
+    }
+    req = urllib.request.Request(
+        url,
+        data=json.dumps(payload).encode('utf-8'),
+        headers={'Content-Type': 'application/json'},
+        method='POST'
+    )
+    with urllib.request.urlopen(req, timeout=12) as response:
+        resp_data = json.loads(response.read().decode('utf-8'))
+        raw_text = resp_data['candidates'][0]['content']['parts'][0]['text']
+        data = json.loads(raw_text)
+        if isinstance(data, list) and len(data) >= 5:
+            for idx, item in enumerate(data):
+                item['order'] = idx + 1
+            return data
+    raise ValueError("Gemini returned invalid question structure.")
+

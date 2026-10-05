@@ -123,19 +123,19 @@ class Command(BaseCommand):
         jobs = {}
 
         for data in jobs_data:
-            job, _ = Job.objects.get_or_create(
-                title=data['title'],
-                company=company,
-                recruiter=recruiter,
-                defaults={
-                    'description': data['description'],
-                    'requirements': data['requirements'],
-                    'location': data['location'],
-                    'workplace': 'hybrid',
-                    'experience_level': '2+ years',
-                    'status': 'published',
-                }
-            )
+            job = Job.objects.filter(title=data['title'], company=company, recruiter=recruiter).first()
+            if not job:
+                job = Job.objects.create(
+                    title=data['title'],
+                    company=company,
+                    recruiter=recruiter,
+                    description=data['description'],
+                    requirements=data['requirements'],
+                    location=data['location'],
+                    workplace='hybrid',
+                    experience_level='2+ years',
+                    status='published',
+                )
 
             jobs[data['title']] = job
 
@@ -334,21 +334,20 @@ class Command(BaseCommand):
             candidate = candidates[data['candidate']]
             job = jobs[data['job']]
 
-            application, created = Application.objects.get_or_create(
-                job=job,
-                candidate=candidate,
-                defaults={
-                    'cover_letter': data['cover_letter'],
-                    'status': data['status'],
-                    'match_score': data['score'],
-                }
-            )
-
-            # Keep existing demo applications updated.
-            application.cover_letter = data['cover_letter']
-            application.status = data['status']
-            application.match_score = data['score']
-            application.save()
+            application = Application.objects.filter(job=job, candidate=candidate).first()
+            if not application:
+                application = Application.objects.create(
+                    job=job,
+                    candidate=candidate,
+                    cover_letter=data['cover_letter'],
+                    status=data['status'],
+                    match_score=data['score'],
+                )
+            else:
+                application.cover_letter = data['cover_letter']
+                application.status = data['status']
+                application.match_score = data['score']
+                application.save()
 
             # Always make sure the application has a useful history.
             history_statuses = ['applied']
@@ -374,13 +373,82 @@ class Command(BaseCommand):
             for status in history_statuses:
                 changed_by = candidate if status == 'applied' else recruiter
 
-                StatusHistory.objects.get_or_create(
-                    application=application,
-                    status=status,
-                    defaults={
-                        'changed_by': changed_by,
-                        'notes': 'Demo recruitment activity',
-                    }
+                if not StatusHistory.objects.filter(application=application, status=status).exists():
+                    StatusHistory.objects.create(
+                        application=application,
+                        status=status,
+                        changed_by=changed_by,
+                        notes='Demo recruitment activity',
+                    )
+
+        # ---------------------------------------------------------
+        # Seed Online Aptitude Assessments
+        # ---------------------------------------------------------
+        from applications.views import get_or_create_job_assessment
+        for job in Job.objects.all():
+            get_or_create_job_assessment(job)
+
+        # ---------------------------------------------------------
+        # Seed Demo Interviews & Feedback
+        # ---------------------------------------------------------
+        from applications.models import Interview, InterviewFeedback
+        from django.utils import timezone
+        import datetime
+
+        now = timezone.now()
+
+        # 1. Technical Round for demo_candidate (tomorrow)
+        demo_cand_app = Application.objects.filter(candidate__username='demo_candidate').first()
+        if demo_cand_app:
+            demo_cand_app.status = 'interview'
+            demo_cand_app.save(update_fields=['status'])
+            interview1 = Interview.objects.filter(application=demo_cand_app, round='Technical Assessment & Live Coding').first()
+            if not interview1:
+                interview1 = Interview.objects.create(
+                    application=demo_cand_app,
+                    round='Technical Assessment & Live Coding',
+                    interview_time=now + datetime.timedelta(days=1, hours=2),
+                    mode='Online Video (Google Meet)',
+                    meeting_link='https://meet.google.com/abc-tfno-xyz',
+                    status='scheduled',
+                    feedback=''
+                )
+
+        # 2. System Architecture for rahul_menon (in 2 days)
+        rahul_app = Application.objects.filter(candidate__username='rahul_menon').first()
+        if rahul_app:
+            interview2 = Interview.objects.filter(application=rahul_app, round='Frontend Architecture & Code Review').first()
+            if not interview2:
+                interview2 = Interview.objects.create(
+                    application=rahul_app,
+                    round='Frontend Architecture & Code Review',
+                    interview_time=now + datetime.timedelta(days=2, hours=4),
+                    mode='Online Video (Zoom)',
+                    meeting_link='https://zoom.us/j/9876543210',
+                    status='scheduled',
+                    feedback=''
+                )
+
+        # 3. Completed Screening Round for divya_sharma (yesterday with rating & feedback)
+        divya_app = Application.objects.filter(candidate__username='divya_sharma').first()
+        if divya_app:
+            interview3 = Interview.objects.filter(application=divya_app, round='Initial Technical & Culture Screen').first()
+            if not interview3:
+                interview3 = Interview.objects.create(
+                    application=divya_app,
+                    round='Initial Technical & Culture Screen',
+                    interview_time=now - datetime.timedelta(days=1, hours=3),
+                    mode='Online Video (Google Meet)',
+                    meeting_link='https://meet.google.com/div-tech-meet',
+                    status='completed',
+                    feedback='[Demo Recruiter - Rating: 5/5]: Excellent grasp of Django ORM, query optimization, and REST API conventions. Strong communication skills and demonstrated production debugging capabilities.'
+                )
+            if not interview3.feedback_entries.exists():
+                InterviewFeedback.objects.create(
+                    interview=interview3,
+                    interviewer=recruiter,
+                    rating=5,
+                    comments='Superb candidate. Demonstrated deep knowledge of Django transactions, celery task queues, and DB indexing. Recommended for immediate Technical Round 2.'
                 )
 
         # ---------------------------------------------------------

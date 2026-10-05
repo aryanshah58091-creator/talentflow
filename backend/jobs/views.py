@@ -16,15 +16,57 @@ class JobListCreateView(generics.ListCreateAPIView):
             .order_by("-created_at")
         )
 
-        if self.request.user.role == "recruiter":
-            return qs.filter(recruiter=self.request.user)
+        if getattr(self.request.user, 'role', '') in ['recruiter', 'admin'] or getattr(self.request.user, 'is_staff', False):
+            return qs
 
         return qs.filter(status=Job.Status.PUBLISHED)
 
-    def perform_create(self, serializer):
-        from companies.models import RecruiterProfile
+    def create(self, request, *args, **kwargs):
+        if getattr(request.user, 'role', '') == 'candidate':
+            from rest_framework import status
+            from rest_framework.response import Response
+            return Response(
+                {'detail': 'Candidates cannot create jobs. Only recruiters and administrators are authorized.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        return super().create(request, *args, **kwargs)
 
-        profile = RecruiterProfile.objects.get(user=self.request.user)
+    def perform_create(self, serializer):
+
+        from companies.models import Company, RecruiterProfile
+
+        company_name = self.request.data.get('company_name')
+        profile = RecruiterProfile.objects.filter(user=self.request.user).first()
+
+        if company_name and str(company_name).strip():
+            company, _ = Company.objects.get_or_create(
+                name=str(company_name).strip(),
+                defaults={'location': self.request.data.get('location', '')}
+            )
+            if profile:
+                profile.company = company
+                profile.save(update_fields=['company'])
+            else:
+                profile = RecruiterProfile.objects.create(
+                    user=self.request.user,
+                    company=company,
+                    position='Recruiter'
+                )
+        elif not profile:
+            comp_name = f"{self.request.user.first_name or self.request.user.username}'s Org"
+            company, _ = Company.objects.get_or_create(
+                name=comp_name,
+                defaults={'location': 'Remote / Global'}
+            )
+            profile = RecruiterProfile.objects.create(
+                user=self.request.user,
+                company=company,
+                position='Recruiter'
+            )
+        else:
+            company = profile.company
+
+            profile.save(update_fields=['company'])
 
         serializer.save(
             recruiter=self.request.user,
