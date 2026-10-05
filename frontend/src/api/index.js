@@ -1,8 +1,19 @@
-export const API = (import.meta.env.VITE_API_URL || '').trim() || (
-  window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-    ? 'http://127.0.0.1:8000/api/v1'
-    : 'https://talentflow-api-v6ce.onrender.com/api/v1'
-);
+const getApiBase = () => {
+  const envUrl = (import.meta.env.VITE_API_URL || '').trim();
+  let base = envUrl;
+  if (!base) {
+    base = (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'))
+      ? 'http://127.0.0.1:8000/api/v1'
+      : 'https://talentflow-api-v6ce.onrender.com/api/v1';
+  }
+  base = base.replace(/\/+$/, '');
+  if (!base.endsWith('/api/v1')) {
+    base = `${base}/api/v1`;
+  }
+  return base;
+};
+
+export const API = getApiBase();
 
 export const getToken = () => localStorage.getItem('tf_token');
 export const setToken = (token) => localStorage.setItem('tf_token', token);
